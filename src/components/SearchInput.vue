@@ -2,7 +2,7 @@
   <div class="input-container">
     <label>{{ label }}</label>
     <div class="input-wrapper">
-      <input v-model="innerValue" v-bind="$attrs" />
+      <input v-model="modelValue" v-bind="$attrs" />
       <button @click="clearInput">Clear</button>
     </div>
     <p v-if="countSearch > 0">
@@ -26,16 +26,31 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['clear']);
+const emit = defineEmits(['clear', 'update:modelValue']);
 
 const wordsLimit = 3;
 const isLimit = ref(false);
-const innerValue = ref(props.modelValue);
+const innerValue = ref('');
+
+const clearInput = () => {
+  console.log('Это modelValue' + ' ' + props.modelValue)
+  innerValue.value = '';
+  emit('clear');
+  emit('update:modelValue', innerValue.value);
+};
 
 const checkWordsCount = (value) => {
   const wordsCount = value?.trim().split(/\s+/).length;
   isLimit.value = wordsCount > wordsLimit;
 };
+
+const modelValue = computed({
+  get: () => innerValue.value,
+  set: (value) => {
+    innerValue.value = value;
+    emit('update:modelValue', value);
+  }
+});
 
 const countSearch = computed(() => {
   if (innerValue.value) {
@@ -47,11 +62,6 @@ const countSearch = computed(() => {
 watch(innerValue, (value) => {
   checkWordsCount(value);
 });
-
-const clearInput = () => {
-  innerValue.value = '';
-  emit('clear');
-};
 </script>
 
 <style scoped>
